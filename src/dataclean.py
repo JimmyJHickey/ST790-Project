@@ -1,6 +1,6 @@
 import pandas as pd
-train = pd.read_csv('Kannada-MNIST/train.csv')
-test = pd.read_csv('Kannada-MNIST/test.csv')
+train = pd.read_csv('../Kannada-MNIST/train.csv')
+test = pd.read_csv('../Kannada-MNIST/test.csv')
 print(train)
 trainY = train[train.columns[0]]
 print(trainY)
