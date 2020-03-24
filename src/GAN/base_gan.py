@@ -5,7 +5,7 @@ import numpy as np
 
 class GAN:
 
-    def __init__(self, g_gen = None):
+    def __init__(self, g_gen=None):
         """
 
         :param g_gen: (Optional) Wrapper function for G (generator) random input sample
