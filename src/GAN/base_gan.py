@@ -11,7 +11,6 @@ class GAN:
         :param g_gen: (Optional) Wrapper function for G (generator) random input sample
             This will default to a Uniform [-1, 1] generator.
         """
-        self.name = "test"
 
         # Set default random generator to uniform [-1, 1]
         if g_gen is None:
