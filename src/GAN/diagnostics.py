@@ -22,26 +22,50 @@ from tensorflow.keras import backend as K
 
 
 # define the standalone discriminator model
-def define_discriminator(in_shape=(28, 28, 1)):
-    # weight initialization
-    init = RandomNormal(stddev=0.02)
-    # define model
-    model = Sequential()
-    # downsample to 14x14
-    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init, input_shape=in_shape))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
-    # downsample to 7x7
-    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
-    # classifier
-    model.add(Flatten())
-    model.add(Dense(1, activation='sigmoid'))
-    # compile model
-    opt = Adam(lr=0.0002, beta_1=0.5)
-    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
-    return model
+# def define_discriminator(in_shape=(28, 28, 1)):
+#     # weight initialization
+#     init = RandomNormal(stddev=0.02)
+#     # define model
+#     model = Sequential()
+#     # downsample to 14x14
+#     model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init, input_shape=in_shape))
+#     model.add(BatchNormalization())
+#     model.add(LeakyReLU(alpha=0.2))
+#     # downsample to 7x7
+#     model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
+#     model.add(BatchNormalization())
+#     model.add(LeakyReLU(alpha=0.2))
+#     # classifier
+#     model.add(Flatten())
+#     model.add(Dense(1, activation='sigmoid'))
+#     # compile model
+#     opt = Adam(lr=0.0002, beta_1=0.5)
+#     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+#     return model
+
+
+#  FROM WGAN_TEST
+# def define_discriminator(in_shape=(28, 28, 1)):
+#     model = Sequential()
+#     if K.image_data_format() == 'channels_first':
+#         model.add(Conv2D(64, (5, 5), padding='same', input_shape=in_shape))
+#     else:
+#         model.add(Conv2D(64, (5, 5), padding='same', input_shape=in_shape))
+#     model.add(LeakyReLU())
+#     model.add(Conv2D(128, (5, 5), kernel_initializer='he_normal',
+#                             strides=[2, 2]))
+#     model.add(LeakyReLU())
+#     model.add(Conv2D(128, (5, 5), kernel_initializer='he_normal', padding='same',
+#                             strides=[2, 2]))
+#     model.add(LeakyReLU())
+#     model.add(Flatten())
+#     model.add(Dense(1024, kernel_initializer='he_normal'))
+#     model.add(LeakyReLU())
+#     model.add(Dense(1, kernel_initializer='he_normal'))
+
+#     opt = Adam(lr=0.0002, beta_1=0.5)
+#     model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+#     return model
 
 
 # define the standalone generator model
@@ -68,6 +92,7 @@ def define_discriminator(in_shape=(28, 28, 1)):
 #     return model
 
 
+# FROM WGAN_TEST
 def define_generator(latent_dim):
     """Creates a generator model that takes a 100-dimensional noise vector as a "seed",
     and outputs images of size 28x28x1."""
@@ -245,7 +270,7 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=1, n_batch=
 # make folder for results
 makedirs('results_baseline', exist_ok=True)
 # size of the latent space
-latent_dim = 50
+latent_dim = 100
 # create the discriminator
 discriminator = define_discriminator()
 # create the generator
@@ -256,4 +281,4 @@ gan_model = define_gan(generator, discriminator)
 dataset = load_real_samples()
 print(dataset.shape)
 # train model
-train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs=10)
+train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs=20)
