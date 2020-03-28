@@ -5,18 +5,20 @@ from numpy import zeros
 from numpy import ones
 from numpy.random import randn
 from numpy.random import randint
-from keras.datasets.mnist import load_data
-from keras.optimizers import Adam
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Reshape
-from keras.layers import Flatten
-from keras.layers import Conv2D
-from keras.layers import Conv2DTranspose
-from keras.layers import LeakyReLU
-from keras.layers import BatchNormalization
-from keras.initializers import RandomNormal
+from tensorflow.keras.datasets.mnist import load_data
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Reshape
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Conv2DTranspose
+from tensorflow.keras.layers import LeakyReLU
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.initializers import RandomNormal
 from matplotlib import pyplot
+
+from tensorflow.keras import backend as K
 
 
 # define the standalone discriminator model
@@ -43,28 +45,59 @@ def define_discriminator(in_shape=(28, 28, 1)):
 
 
 # define the standalone generator model
-def define_generator(latent_dim):
-    # weight initialization
-    init = RandomNormal(stddev=0.02)
-    # define model
-    model = Sequential()
-    # foundation for 7x7 image
-    n_nodes = 128 * 7 * 7
-    model.add(Dense(n_nodes, kernel_initializer=init, input_dim=latent_dim))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Reshape((7, 7, 128)))
-    # upsample to 14x14
-    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
-    # upsample to 28x28
-    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
-    # output 28x28x1
-    model.add(Conv2D(1, (7, 7), activation='tanh', padding='same', kernel_initializer=init))
-    return model
+# def define_generator(latent_dim):
+#     # weight initialization
+#     init = RandomNormal(stddev=0.02)
+#     # define model
+#     model = Sequential()
+#     # foundation for 7x7 image
+#     n_nodes = 128 * 7 * 7
+#     model.add(Dense(n_nodes, kernel_initializer=init, input_dim=latent_dim))
+#     model.add(LeakyReLU(alpha=0.2))
+#     model.add(Reshape((7, 7, 128)))
+#     # upsample to 14x14
+#     model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
+#     model.add(BatchNormalization())
+#     model.add(LeakyReLU(alpha=0.2))
+#     # upsample to 28x28
+#     model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=init))
+#     model.add(BatchNormalization())
+#     model.add(LeakyReLU(alpha=0.2))
+#     # output 28x28x1
+#     model.add(Conv2D(1, (7, 7), activation='tanh', padding='same', kernel_initializer=init))
+#     return model
 
+
+def define_generator(latent_dim):
+    """Creates a generator model that takes a 100-dimensional noise vector as a "seed",
+    and outputs images of size 28x28x1."""
+    model = Sequential()
+    model.add(Dense(1024, input_dim=latent_dim))
+    model.add(LeakyReLU())
+    model.add(Dense(128 * 7 * 7))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU())
+    if K.image_data_format() == 'channels_first':
+        model.add(Reshape((128, 7, 7), input_shape=(128 * 7 * 7,)))
+        bn_axis = 1
+    else:
+        model.add(Reshape((7, 7, 128), input_shape=(128 * 7 * 7,)))
+        bn_axis = -1
+    model.add(Conv2DTranspose(128, (5, 5), strides=2, padding='same'))
+    model.add(BatchNormalization(axis=bn_axis))
+    model.add(LeakyReLU())
+    model.add(Conv2D(64, (5, 5), padding='same'))
+    model.add(BatchNormalization(axis=bn_axis))
+    model.add(LeakyReLU())
+    model.add(Conv2DTranspose(64, (5, 5), strides=2, padding='same'))
+    model.add(BatchNormalization(axis=bn_axis))
+    model.add(LeakyReLU())
+
+    # Because we normalized training inputs to lie in the range [-1, 1],
+    # the tanh function should be used for the output of the generator to ensure
+    # its output also lies in this range.
+    model.add(Conv2D(1, (5, 5), padding='same', activation='tanh'))
+    return model
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(generator, discriminator):
@@ -223,4 +256,4 @@ gan_model = define_gan(generator, discriminator)
 dataset = load_real_samples()
 print(dataset.shape)
 # train model
-train(generator, discriminator, gan_model, dataset, latent_dim)
+train(generator, discriminator, gan_model, dataset, latent_dim, n_epochs=10)
