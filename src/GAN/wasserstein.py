@@ -16,6 +16,8 @@ from tensorflow.keras.layers import Conv2DTranspose
 from tensorflow.keras.layers import LeakyReLU
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.initializers import RandomNormal
+from tensorflow.keras.constraints import Constraint
+
 from matplotlib import pyplot
 
 from tensorflow.keras import backend as K
