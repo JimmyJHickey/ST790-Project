@@ -4,7 +4,6 @@ from numpy import mean
 from numpy import ones
 from numpy.random import randn
 from numpy.random import randint
-from keras.datasets.mnist import load_data
 from keras import backend
 from keras.optimizers import RMSprop
 from keras.models import Sequential
